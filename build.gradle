@@ -7,5 +7,6 @@ repositories {
 }
 
 dependencies {
+    compile 'org.processing:core:3.0.1'
     testCompile 'junit:junit:4.12'
 }

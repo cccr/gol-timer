@@ -1,7 +1,7 @@
 package com.halfofpoint.gol;
 
-import peasy.PeasyCam;
 import processing.core.PApplet;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * Created by mart on 13/11/15.
  */
-public class Main extends PApplet {
+public class MainExample extends PApplet {
 
     final static int CELL_SIZE = 20;
     final static int WORLD_WIDTH = 100;
@@ -17,48 +17,35 @@ public class Main extends PApplet {
 
     final static int FRAME_RATE = 5;
 
-    PeasyCam cam;
 
     FigureReader fr = new PNGFigureReader();
 
+
     public static void main(String args[]) {
-        PApplet.main(new String[]{"--present", "com.halfofpoint.gol.Main"});
+        PApplet.main(new String[]{"--present", "com.halfofpoint.gol.MainExample"});
     }
 
-
     public void settings() {
-        fullScreen(P3D, 2);
-        //size(WORLD_WIDTH * CELL_SIZE, WORLD_HEIGHT * CELL_SIZE, P3D);
+        fullScreen(2);
+        //size(WORLD_WIDTH * CELL_SIZE, WORLD_HEIGHT * CELL_SIZE);
     }
 
     Map<String, List<World.Dot>> charactersDotMap = new HashMap<>(70);
 
-    World counterWorld;
-    World secondsWorld;
+    World firstGenWorld;
+    World secondGenWorld;
     World delimiterWorld;
     World worldEPAM;
 
     int m;
     int initialFreeze = 0;
-    int start = 27;
+    int start = 35;
 
     public void setup() {
+        firstGenWorld = new World(WORLD_WIDTH, WORLD_HEIGHT);
+        secondGenWorld = new World(WORLD_WIDTH, WORLD_HEIGHT);
 
-        cam = new PeasyCam(this, 100);
-        cam.setMinimumDistance(50);
-        cam.setMaximumDistance(500);
-
-        counterWorld = new World(WORLD_WIDTH, WORLD_HEIGHT);
-        secondsWorld = new World(WORLD_WIDTH, WORLD_HEIGHT);
-        delimiterWorld = new World(10, 40);
-        worldEPAM = new World(226, 80);
-
-        fillNumbersMap();
-
-        fillWorldWithDigits(start, counterWorld);
-        fr.readFigureWithShift('e', 0, 0).stream().forEach(worldEPAM::addDot);
-
-        fr.readFigureWithShift('d', 0, 0).stream().forEach(delimiterWorld::addDot);
+        fr.readFigureWithShift('z', 0, 0).stream().forEach(worldEPAM::addDot);
 
         background(0);
         noStroke();
@@ -92,50 +79,18 @@ public class Main extends PApplet {
     public void draw() {
         background(0);
 
-        drawWorld(counterWorld, new TypicalDrawer());
-
-        drawSeconds();
+        drawWorld(firstGenWorld, new TypicalDrawer());
 
 
-       // drawWorld(worldEPAM, new EPAMDrawer());
+        firstGenWorld.tick();
 
-        drawWorld(delimiterWorld, new SmallDrawer());
-        delimiterWorld.tick();
-
-        if (initialFreeze > FRAME_RATE) initialFreeze = (FRAME_RATE * -4 + 1);
-
-        if (initialFreeze < 0)
-            counterWorld.tick();
-
-        initialFreeze++;
-
-        if (frameCount%(FRAME_RATE*5) == 0)
-            fillWorldWithDigits(start, counterWorld);
-
-        if (m != minute()) {
-            m = minute();
-            start--;
-            fillWorldWithDigits(start, counterWorld);
-        }
-    }
-
-    public void keyPressed() {
-        if (key == CODED) {
-            if (keyCode == UP) {
-                start++;
-            } else if (keyCode == DOWN) {
-                start--;
-            }
-        }
     }
 
 
-
-    private void drawSeconds() {
-        fillWorldWithDigits(59 - second(), secondsWorld);
-
-        drawWorld(secondsWorld, new SmallDrawer());
+    private void drawEPAM() {
+        drawWorld(worldEPAM, new EPAMDrawer());
     }
+
 
     private float getRandomFloat(int multiplier, int plus) {
         return (float) Math.random()*multiplier+plus;
@@ -149,14 +104,7 @@ public class Main extends PApplet {
         @Override
         public void draw(World.Dot dot) {
             fill(getRandomFloat(155, 100), getRandomFloat(155, 100), getRandomFloat(155, 100));
-
-            pushMatrix();
-            translate(dot.getX() * CELL_SIZE, dot.getY() * CELL_SIZE, -200);
-            //fill(0,0,255);
-            box(CELL_SIZE);
-
-            //rect(dot.getX() * CELL_SIZE, dot.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-            popMatrix();
+            rect(dot.getX() * CELL_SIZE, dot.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE);
         }
     }
 
@@ -175,8 +123,8 @@ public class Main extends PApplet {
         public void draw(World.Dot dot) {
             fill(getRandomFloat(100, 0), getRandomFloat(100, 131), 211);
             int cellSize = 1;
-            int shift = 50;
-            rect(dot.getX() * cellSize + shift, dot.getY() * cellSize + shift, cellSize, cellSize);
+            int shift = 1200;
+            rect(dot.getX() * cellSize + shift, dot.getY() * cellSize, cellSize, cellSize);
         }
     }
 }
